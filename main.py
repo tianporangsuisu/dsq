@@ -1,3 +1,4 @@
+
 import pygame
 
 
@@ -28,6 +29,10 @@ blankPosition = [(176, 76), (376, 76), (476, 76), (576, 76), (776, 76),
 # 水格位置  76<176 276<376<476 576<676
 waterPosition = [(376, 176), (476, 176), (576, 176), (376, 276), (476, 276), (576, 276),
                  (376, 476), (476, 476), (576, 476), (376, 576), (476, 576), (576, 576)]
+# 上方水格
+waterPosition1 = [(376, 176), (476, 176), (576, 176), (376, 276), (476, 276), (576, 276)]
+# 下方水格
+waterPosition2 = [(376, 476), (476, 476), (576, 476), (376, 576), (476, 576), (576, 576)]
 
 greenTargets = []
 redTargets = []
@@ -83,15 +88,24 @@ class NormalAnimal(Target):
         self.isTrapped = isTrapped
         self.isAlive = isAlive
 
-    def selected(self):
-        self.isSelected = True
-
+    # 只考虑移动
     def move(self, targetX, targetY):
-        if (targetX, targetY) in [(self.x + 100, self.y), (self.x, self.y + 100), (self.x - 100, self.y),
-                                  (self.x, self.y - 100)] & (targetX, targetY) not in waterPosition:
-            self.x = targetX, self.y = targetY
-            return True
-        return False
+        toMove = [(targetX+100,targetY),(targetX-100,targetY),(targetX,targetY+100),(targetX,targetY-100)]
+        # 可以移动
+        if (targetX,targetY) in toMove:
+            # 普通动物不许走河
+            if (targetX, targetY) in waterPosition1:
+                return False
+
+            # 调用方法移动，更新属性，有动物就调用自身吃方法
+            for i in
+
+            if (targetX, targetY) in [(self.x + 100, self.y), (self.x, self.y + 100), (self.x - 100, self.y),
+                                      (self.x, self.y - 100)]:
+                self.x = targetX, self.y = targetY
+                return True
+            return False
+
 
     def tryEat(self, targetLevel, isTrapped):
         if targetLevel == -1:
@@ -103,7 +117,7 @@ class NormalAnimal(Target):
 
 
 class SpecialAnimal(NormalAnimal):
-    def __init__(self, x, y, targetName, targetLevel,isTrapped,isAlive):
+    def __init__(self, x, y, targetName, targetLevel,isAlive,isTrapped):
         super().__init__(x, y, targetName, targetLevel,isAlive,isTrapped)
 
     def jumpOver(self):
@@ -153,16 +167,8 @@ def move(oldx,oldy,newx,newy,turn):
                     if (j[0], j[1]) == (newx,newy):
                         # 我是大象 你是老鼠
                         if i[3]==7 & j[3]==0:
+                            1
 
-
-
-                        # 目
-                        # 标点是陷阱
-                        elif j[3] == -1:
-
-
-                        # 我比你大
-                        elif i[3] > j[3]:
 
 
 
@@ -171,21 +177,25 @@ def move(oldx,oldy,newx,newy,turn):
 
 def getMove(x,y):
     toMove = []
+    # 右侧移动
     if (x,y+100) in waterPosition:
         toMove.append((x,y+300))
     else:
         toMove.append((x, y + 100))
 
+    # 上侧移动
     if (x+100,y) in waterPosition:
         toMove.append((x+400,y))
     else:
         toMove.append((x+100,y))
 
+    # 左侧移动
     if (x, y - 100) in waterPosition:
         toMove.append((x, y - 300))
     else:
         toMove.append((x, y - 100))
 
+    # 下侧移动
     if (x - 100, y) in waterPosition:
         toMove.append((x - 400, y))
     else:
@@ -194,13 +204,14 @@ def getMove(x,y):
     return toMove
 
 def printObj():
+    1
 
 
 if __name__ == "__main__":
-
+    print(pygame.font.get_fonts())
     # 初始化
     pygame.init()
-    f = pygame.font.SysFont(['华文中宋', 'microsoftsansserif'], 25)
+    f = pygame.font.SysFont(['fangsong', 'microsoftsansserif'], 25)
 
     # 设置表格大小    (100*7+50)*(100*9+50)   单格大小100*100 边框 25*25
     screen = pygame.display.set_mode((950, 750))
@@ -253,6 +264,7 @@ if __name__ == "__main__":
     turn = 0
     (mx,my)=(0,0)
     (mmx,mmy)=(0,0)
+    selectedAnimal = None
 
     # 事件监听
     while True:
@@ -264,10 +276,12 @@ if __name__ == "__main__":
             (mx, my) = getPosition(mx, my)
             for i in (greenTargets if turn == 0 else redTargets):
                 if (i.x,i.y)==(mx,my):
+                    selectedAnimal = i
                     print(i.targetName+"is selected!")
+                    break
         if event.type == pygame.MOUSEBUTTONUP:
             (mmx,mmy) = event.pos
             (mmx,mmy) = getPosition(mmx,mmy)
-            move(mx,my,mmx,mmy,turn)
+            selectedAnimal.move(mmx,mmy)
 
         pygame.display.flip()
